@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yellow Server - Entrega, Auditoria e Inteligência Contextual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #F5C800;
+    --yellow-dim: #C9A400;
+    --bg: #0A0A0C;
+    --card: #141418;
+    --card2: #1C1C22;
+    --border: #2A2A35;
+    --white: #FFFFFF;
+    --off: #E0E0E8;
+    /* --muted: #707080; */
+    --muted: #8d8da1;
+    --dim: #3A3A48;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── CUSTOM CURSOR ─────────────────────────────────────── */
+  .cursor {
+    position: fixed;
+    width: 12px; height: 12px;
+    background: var(--yellow);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.2s, height 0.2s, opacity 0.2s;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--yellow);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.12s ease, width 0.25s, height 0.25s, opacity 0.25s;
+    opacity: 0.5;
+  }
+  body:hover .cursor { opacity: 1; }
+
+  /* ── NOISE TEXTURE overlay ─────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ── NAV ───────────────────────────────────────────────── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 4rem;
+    background: linear-gradient(to bottom, rgba(10,10,12,0.95), transparent);
+    backdrop-filter: blur(2px);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.12em;
+    color: var(--yellow);
+  }
+  .nav-logo span { color: var(--muted); font-size: 0.9em; }
+
+  .logo-topo{
+    width: 100%;
+    max-width: 200px;
+  }
+
+  nav ul {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--yellow); }
+
+  .nav-cta {
+    background: var(--yellow);
+    color: var(--bg) !important;
+    padding: 0.55rem 1.4rem;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em;
+    transition: background 0.2s, transform 0.2s !important;
+  }
+  .nav-cta:hover { background: var(--white) !important; transform: translateY(-1px); }
+
+  /* ── HERO ──────────────────────────────────────────────── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding: 8rem 4rem 4rem;
+  }
+
+  .hero-ring {
+    position: absolute;
+    right: -8vw;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 65vw;
+    height: 65vw;
+    border-radius: 50%;
+    border: clamp(40px, 6vw, 80px) solid var(--yellow);
+    opacity: 1;
+    animation: ringPulse 8s ease-in-out infinite;
+  }
+  .hero-ring-inner {
+    position: absolute;
+    right: -2vw;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50vw;
+    height: 50vw;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    animation: ringPulse 8s ease-in-out infinite reverse;
+  }
+  .hero-dot {
+    position: absolute;
+    bottom: 12%;
+    right: 8%;
+    width: 1.2rem;
+    height: 1.2rem;
+    border-radius: 50%;
+    background: var(--yellow);
+    animation: dotFloat 4s ease-in-out infinite;
+  }
+
+  @keyframes ringPulse {
+    0%, 100% { transform: translateY(-50%) scale(1); }
+    50% { transform: translateY(-50%) scale(1.02); }
+  }
+  @keyframes dotFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 620px; }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 0.4rem 1rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--yellow);
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 8vw, 7rem);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.8rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.4s forwards;
+  }
+  .hero-title em {
+    font-style: normal;
+    color: var(--yellow);
+    display: block;
+  }
+
+  .hero-sub {
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 480px;
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.6s forwards;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.8s forwards;
+  }
+
+  .btn-primary {
+    background: var(--yellow);
+    color: var(--bg);
+    padding: 0.9rem 2.2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: none;
+    cursor: none;
+    transition: background 0.2s, transform 0.2s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: var(--white); transform: translateY(-2px); }
+
+  .btn-ghost {
+    color: var(--muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.2s;
+    cursor: none;
+  }
+  .btn-ghost:hover { color: var(--white); }
+  .btn-ghost::after { content: '→'; transition: transform 0.2s; }
+  .btn-ghost:hover::after { transform: translateX(4px); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── STATS BAR ─────────────────────────────────────────── */
+  .stats-bar {
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .stat-item {
+    padding: 2rem 4rem;
+    border-right: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-item::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 0; height: 2px;
+    background: var(--yellow);
+    transition: width 0.6s ease;
+  }
+  .stat-item:hover::before { width: 100%; }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.2rem;
+    color: var(--yellow);
+    letter-spacing: 0.02em;
+    line-height: 1;
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 0.4rem;
+  }
+
+  /* ── SECTIONS shared ───────────────────────────────────── */
+  section { position: relative; overflow: hidden; }
+
+  .section-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 28px; height: 1px;
+    background: var(--yellow);
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.8rem, 5vw, 4.5rem);
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── PROBLEMA ──────────────────────────────────────────── */
+  #problema {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 70vh;
+  }
+
+  .problema-left {
+    background: var(--bg);
+    padding: 6rem 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .problema-left p {
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.75;
+    margin-top: 1.8rem;
+    max-width: 440px;
+  }
+
+  .problema-right {
+    background: var(--yellow);
+    padding: 6rem 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .problema-statement {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 4.5vw, 5rem);
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    color: var(--bg);
+  }
+
+  .problema-sub {
+    font-size: 0.9rem;
+    color: rgba(10,10,12,0.6);
+    margin-top: 1.5rem;
+    line-height: 1.65;
+    max-width: 360px;
+  }
+
+  /* ── PILARES ───────────────────────────────────────────── */
+  #pilares {
+    padding: 8rem 4rem;
+    background: var(--bg);
+  }
+
+  .pilares-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 4rem;
+  }
+
+  .pilares-note {
+    font-size: 0.82rem;
+    color: var(--muted);
+    max-width: 280px;
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .pilares-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid var(--border);
+  }
+
+  .pilar {
+    padding: 3rem 2.5rem;
+    border-right: 1px solid var(--border);
+    position: relative;
+    transition: background 0.3s;
+  }
+  .pilar:last-child { border-right: none; }
+  .pilar:hover { background: var(--card); }
+  .pilar:nth-child(2) {
+    background: var(--yellow);
+    border-color: var(--yellow);
+  }
+  .pilar:nth-child(2):hover { background: #e6bc00; }
+
+  .pilar-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 5rem;
+    line-height: 1;
+    color: var(--dim);
+    display: block;
+    margin-bottom: 1.5rem;
+  }
+  .pilar:nth-child(2) .pilar-num { color: rgba(10,10,12,0.15); }
+
+  .pilar-icon {
+    width: 36px; height: 36px;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+  }
+
+  .pilar-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.8rem;
+    color: var(--yellow);
+  }
+  .pilar:nth-child(2) .pilar-title { color: var(--bg); }
+
+  .pilar-body {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .pilar:nth-child(2) .pilar-body { color: rgba(10,10,12,0.65); }
+
+  /* ── CONTEXTUS ─────────────────────────────────────────── */
+  #contextus {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 80vh;
+  }
+
+  .contextus-left {
+    background: var(--yellow);
+    padding: 7rem 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .contextus-left::after {
+    content: 'C';
+    position: absolute;
+    right: -0.1em;
+    bottom: -0.15em;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18rem;
+    color: rgba(10,10,12,0.06);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .contextus-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 7vw, 7rem);
+    color: var(--bg);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    margin-bottom: 2rem;
+  }
+
+  .contextus-before {
+    font-size: 0.95rem;
+    color: rgba(10,10,12,0.5);
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(10,10,12,0.15);
+  }
+
+  .contextus-after {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--bg);
+    line-height: 1.55;
+  }
+
+  .contextus-right {
+    background: var(--card);
+    padding: 7rem 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .contextus-right h3 {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .feature-list { list-style: none; }
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+    color: var(--off);
+    transition: color 0.2s;
+  }
+  .feature-item:hover { color: var(--yellow); }
+  .feature-item::before {
+    content: '';
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--yellow);
+    flex-shrink: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230A0A0C' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+    background-size: 11px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  /* ── MÉTRICAS ──────────────────────────────────────────── */
+  #metricas {
+    padding: 8rem 4rem;
+    background: var(--bg);
+  }
+
+  .metricas-header {
+    margin-bottom: 4rem;
+  }
+
+  .metricas-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--border);
+  }
+
+  .metrica-row {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.4rem 2rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+    cursor: default;
+  }
+  .metrica-row:last-child { border-bottom: none; }
+  .metrica-row:nth-child(odd) { background: var(--card); }
+  .metrica-row:nth-child(even) { background: var(--yellow); }
+  .metrica-row:nth-child(odd):hover { background: var(--card2); }
+  .metrica-row:nth-child(even):hover { background: #e6bc00; }
+
+  .metrica-icon {
+    width: 28px; height: 28px;
+    opacity: 0.7;
+  }
+  .metrica-row:nth-child(even) .metrica-icon { filter: invert(1); opacity: 0.5; }
+
+  .metrica-q {
+    font-size: 0.95rem;
+    color: var(--off);
+  }
+  .metrica-row:nth-child(even) .metrica-q { color: var(--bg); }
+
+  .metrica-a {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.06em;
+    color: var(--yellow);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .metrica-row:nth-child(even) .metrica-a { color: var(--bg); }
+
+  /* ── PARA QUEM ─────────────────────────────────────────── */
+  #paraquem {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    min-height: 70vh;
+  }
+
+  .paraquem-left {
+    background: var(--yellow);
+    padding: 6rem 3.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .paraquem-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 6vw, 6.5rem);
+    line-height: 0.9;
+    color: var(--bg);
+    letter-spacing: 0.02em;
+  }
+
+  .paraquem-cta-text {
+    font-size: 0.85rem;
+    color: rgba(10,10,12,0.6);
+    line-height: 1.65;
+    max-width: 280px;
+  }
+
+  .paraquem-right {
+    background: var(--card);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .profile-item {
+    padding: 2.2rem 3.5rem;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 2.5rem 1fr;
+    gap: 1.2rem;
+    align-items: start;
+    transition: background 0.2s;
+  }
+  .profile-item:last-child { border-bottom: none; }
+  .profile-item:hover { background: var(--card2); }
+
+  .profile-icon {
+    width: 32px; height: 32px;
+    margin-top: 2px;
+    opacity: 0.6;
+  }
+
+  .profile-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.05em;
+    color: var(--white);
+    margin-bottom: 0.3rem;
+  }
+
+  .profile-body {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── TECNOLOGIAS ───────────────────────────────────────── */
+  #tecnologias {
+    padding: 8rem 4rem;
+    background: var(--bg);
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border: 1px solid var(--border);
+    margin-top: 4rem;
+  }
+
+  .tech-card {
+    padding: 2.5rem 1.8rem;
+    border-right: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+  .tech-card:last-child { border-right: none; }
+  .tech-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--yellow);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  .tech-card:hover { background: var(--card); }
+  .tech-card:hover::before { transform: scaleX(1); }
+
+  .tech-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.35rem;
+    color: var(--yellow);
+    letter-spacing: 0.04em;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+  }
+
+  .tech-desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  /* ── TRANSPARÊNCIA ─────────────────────────────────────── */
+  #transparencia {
+    padding: 8rem 4rem;
+    background: var(--card);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .transp-bg-text {
+    position: absolute;
+    right: -0.05em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20rem;
+    color: rgba(245,200,0,0.04);
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+    letter-spacing: -0.02em;
+  }
+
+  .transp-inner {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 6rem;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .transp-quote-mark {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 5rem;
+    color: var(--yellow);
+    line-height: 0.8;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .transp-quote {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    color: var(--yellow);
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.5rem;
+  }
+
+  .transp-sub {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .valores-list { list-style: none; display: flex; flex-direction: column; gap: 0; }
+  .valor-item {
+    padding: 1.6rem 2rem;
+    border: 1px solid var(--border);
+    margin-bottom: -1px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.25s;
+  }
+  .valor-item:hover { background: var(--card2); }
+  .valor-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--yellow);
+  }
+  .valor-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    color: var(--white);
+    letter-spacing: 0.05em;
+  }
+  .valor-desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.25rem;
+  }
+
+  /* ── PRÓXIMOS PASSOS ───────────────────────────────────── */
+  #passos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 60vh;
+  }
+
+  .passos-left {
+    background: var(--bg);
+    padding: 6rem 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .passos-right {
+    background: var(--yellow);
+    padding: 6rem 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2rem;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+  }
+
+  .step-num {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    color: var(--yellow);
+    flex-shrink: 0;
+  }
+
+  .step-text {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--bg);
+    line-height: 1.4;
+    padding-top: 0.6rem;
+  }
+
+  /* ── FOOTER / CTA ──────────────────────────────────────── */
+  #contato {
+    background: var(--bg);
+    padding: 6rem 4rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .contato-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .contato-left .brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.06em;
+    color: var(--yellow);
+    margin-bottom: 0.4rem;
+  }
+  .contato-left .tagline {
+    font-size: 0.82rem;
+    color: var(--muted);
+    max-width: 320px;
+    line-height: 1.6;
+  }
+
+  .contato-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1rem;
+  }
+
+  .email-link {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.06em;
+    color: var(--white);
+    text-decoration: none;
+    transition: color 0.2s;
+    cursor: none;
+  }
+  .email-link:hover { color: var(--yellow); }
+
+  .footer-meta {
+    font-size: 0.72rem;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: right;
+  }
+
+  /* ── SCROLL REVEAL ─────────────────────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* ── RESPONSIVE ────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    nav { padding: 1.2rem 2rem; }
+    nav ul { display: none; }
+    #hero { padding: 7rem 2rem 4rem; }
+    .hero-ring { width: 85vw; height: 85vw; right: -20vw; }
+    .stats-bar { grid-template-columns: 1fr; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); padding: 1.8rem 2rem; }
+    #problema, #contextus, #paraquem, #passos { grid-template-columns: 1fr; }
+    .pilares-grid, .tech-grid { grid-template-columns: 1fr; }
+    .pilar, .tech-card { border-right: none; border-bottom: 1px solid var(--border); }
+    #pilares, #metricas, #tecnologias, #transparencia, #contato, #passos .passos-left, #passos .passos-right, #paraquem .paraquem-left, #paraquem .paraquem-right, #contextus .contextus-left, #contextus .contextus-right, .problema-left, .problema-right { padding: 4rem 2rem; }
+    .transp-inner { grid-template-columns: 1fr; gap: 3rem; }
+    .pilares-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .pilares-note { text-align: left; }
+    .contato-inner { flex-direction: column; gap: 2.5rem; align-items: flex-start; }
+    .contato-right { align-items: flex-start; }
+    .metrica-row { grid-template-columns: 2rem 1fr; }
+    .metrica-a { display: none; }
+  }
+  @media (max-width: 600px) {
+    #hero {
+        padding: 0rem 2rem 4rem;
+    }
+    .hero-ring {
+      border: clamp(40px, 6vw, 80px) solid #5e4d07;
+    }
+    .logo-topo{
+      width: 100%;
+      max-width: 120px;
+  }
+
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <img src="logo-y.png" alt="" class="logo-topo">
+  </div>
+  <ul>
+    <li><a href="#pilares">Plataforma</a></li>
+    <li><a href="#contextus">Contextus</a></li>
+    <li><a href="#metricas">Métricas</a></li>
+    <li><a href="#paraquem">Para quem</a></li>
+    <li><a href="#contato" class="nav-cta">Fale com a gente</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-ring"></div>
+  <div class="hero-ring-inner"></div>
+  <div class="hero-dot"></div>
+  <div class="hero-content">
+    <div class="hero-tag">Adserver proprietário · Fundado em 2025</div>
+    <h1 class="hero-title">
+      Entrega,<br>auditoria e
+      <em>inteligência</em>
+      contextual.
+    </h1>
+    <p class="hero-sub">Para mídia digital que precisa de mais do que promessas. Controle, rastreabilidade e contexto em tempo real - em uma única plataforma.</p>
+    <div class="hero-actions">
+      <a href="#contato" class="btn-primary">Fale com a gente</a>
+      <a href="#pilares" class="btn-ghost">Como funciona</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item reveal">
+    <span class="stat-num">100%</span>
+    <span class="stat-label">Entregas comprovadas e rastreáveis</span>
+  </div>
+  <div class="stat-item reveal reveal-delay-1">
+    <span class="stat-num">3</span>
+    <span class="stat-label">Camadas integradas - entrega, auditoria e contexto</span>
+  </div>
+  <div class="stat-item reveal reveal-delay-2">
+    <span class="stat-num">0</span>
+    <span class="stat-label">Dependência da palavra do veículo</span>
+  </div>
+</div>
+
+<!-- PROBLEMA -->
+<section id="problema">
+  <div class="problema-left reveal">
+    <div class="section-label">O problema</div>
+    <h2 class="section-title">O mercado de adservers acomodou.</h2>
+    <p>Agências e anunciantes pagam por entregas que não conseguem comprovar, rodam campanhas em ambientes que não auditam, e recebem relatórios com números - mas sem a história real da mídia.</p>
+  </div>
+  <div class="problema-right reveal reveal-delay-2">
+    <p class="problema-statement">A Yellow<br>nasceu pra<br>mudar isso.</p>
+    <p class="problema-sub">Tecnologia proprietária que entrega controle, rastreabilidade e inteligência para cada real investido em mídia digital.</p>
+  </div>
+</section>
+
+<!-- PILARES -->
+<section id="pilares">
+  <div class="pilares-header reveal">
+    <div>
+      <div class="section-label">A plataforma</div>
+      <h2 class="section-title">O que é a<br>Yellow Server</h2>
+    </div>
+    <p class="pilares-note">Nenhum adserver do mercado entrega essas três camadas integradas.</p>
+  </div>
+  <div class="pilares-grid reveal">
+    <div class="pilar">
+      <span class="pilar-num">01</span>
+      <svg class="pilar-icon" viewBox="0 0 24 24" fill="none" stroke="#F5C800" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="20" height="6" rx="1"/><rect x="2" y="9" width="20" height="6" rx="1"/><rect x="2" y="16" width="20" height="6" rx="1"/><circle cx="6" cy="5" r="1" fill="#F5C800"/><circle cx="6" cy="12" r="1" fill="#F5C800"/><circle cx="6" cy="19" r="1" fill="#F5C800"/></svg>
+      <h3 class="pilar-title">Entrega</h3>
+      <p class="pilar-body">Suas campanhas chegam onde precisam chegar, com controle total de volume, formato, horário e canal. Sem limite artificial.</p>
+    </div>
+    <div class="pilar">
+      <span class="pilar-num">02</span>
+      <svg class="pilar-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(10,10,12,0.7)" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <h3 class="pilar-title">Auditoria</h3>
+      <p class="pilar-body">Cada impressão é registrada, rastreável e verificável. Você não depende mais da palavra do veículo.</p>
+    </div>
+    <div class="pilar">
+      <span class="pilar-num">03</span>
+      <svg class="pilar-icon" viewBox="0 0 24 24" fill="none" stroke="#F5C800" stroke-width="1.5" stroke-linecap="round"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/><path d="M9 18h6"/></svg>
+      <h3 class="pilar-title">Inteligência Contextual</h3>
+      <p class="pilar-body">Analisamos o ambiente onde o anúncio apareceu: contexto da página, categoria do conteúdo, tom da mensagem e adequação à marca.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTEXTUS -->
+<section id="contextus">
+  <div class="contextus-left reveal">
+    <h2 class="contextus-title">Contextus</h2>
+    <p class="contextus-before">A maioria dos adservers te diz quantas impressões foram entregues.</p>
+    <p class="contextus-after">O Contextus te diz onde, em que contexto e se aquele ambiente era adequado para a sua marca.</p>
+  </div>
+  <div class="contextus-right reveal reveal-delay-2">
+    <h3>O que o Contextus entrega:</h3>
+    <ul class="feature-list">
+      <li class="feature-item">Classificação de URLs</li>
+      <li class="feature-item">Identificação de categorias de conteúdo</li>
+      <li class="feature-item">Análise semântica da página</li>
+      <li class="feature-item">Detecção de tom e sentimento</li>
+      <li class="feature-item">Suporte a brand safety</li>
+      <li class="feature-item">Dados para auditoria e decisão</li>
+    </ul>
+    <p style="margin-top:2rem; font-size:0.85rem; color:var(--muted); font-style:italic; line-height:1.6;">Na prática: você para de só medir e começa a entender a qualidade da sua mídia.</p>
+  </div>
+</section>
+
+<!-- MÉTRICAS -->
+<section id="metricas">
+  <div class="metricas-header reveal">
+    <div class="section-label">Métricas</div>
+    <h2 class="section-title">As respostas certas<br>para as perguntas certas.</h2>
+  </div>
+  <div class="metricas-grid reveal">
+    <div class="metrica-row">
+      <svg class="metrica-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span class="metrica-q">O anúncio foi visto de verdade?</span>
+      <span class="metrica-a">Viewability</span>
+    </div>
+    <div class="metrica-row">
+      <svg class="metrica-icon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <span class="metrica-q">O vídeo foi assistido até o fim?</span>
+      <span class="metrica-a">VTR e Quartis</span>
+    </div>
+    <div class="metrica-row">
+      <svg class="metrica-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><line x1="8" y1="4" x2="8" y2="8"/><line x1="16" y1="10" x2="16" y2="14"/><line x1="12" y1="16" x2="12" y2="20"/></svg>
+      <span class="metrica-q">A frequência está equilibrada?</span>
+      <span class="metrica-a">Controle de impacto</span>
+    </div>
+    <div class="metrica-row">
+      <svg class="metrica-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <span class="metrica-q">Onde a campanha rodou?</span>
+      <span class="metrica-a">Auditoria com Contextus</span>
+    </div>
+    <div class="metrica-row">
+      <svg class="metrica-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span class="metrica-q">Quanto entregue vs. contratado?</span>
+      <span class="metrica-a">Comprovação em tempo real</span>
+    </div>
+  </div>
+</section>
+
+<!-- PARA QUEM -->
+<section id="paraquem">
+  <div class="paraquem-left reveal">
+    <h2 class="paraquem-title">Para<br>Quem<br>É</h2>
+    <p class="paraquem-cta-text">Se você já perdeu tempo cruzando planilhas de três fornecedores para explicar uma entrega ao cliente, a Yellow Server foi feita para você.</p>
+  </div>
+  <div class="paraquem-right reveal reveal-delay-2">
+    <div class="profile-item">
+      <svg class="profile-icon" viewBox="0 0 24 24" fill="none" stroke="#F5C800" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <div>
+        <p class="profile-title">Agências de mídia</p>
+        <p class="profile-body">Que precisam prestar contas com dados concretos e comprovação verificável.</p>
+      </div>
+    </div>
+    <div class="profile-item">
+      <svg class="profile-icon" viewBox="0 0 24 24" fill="none" stroke="#F5C800" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+      <div>
+        <p class="profile-title">Anunciantes</p>
+        <p class="profile-body">Que querem saber de verdade onde cada real da verba está indo.</p>
+      </div>
+    </div>
+    <div class="profile-item">
+      <svg class="profile-icon" viewBox="0 0 24 24" fill="none" stroke="#F5C800" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <div>
+        <p class="profile-title">Veículos</p>
+        <p class="profile-body">Que precisam comprovar entrega com transparência para seus parceiros.</p>
+      </div>
+    </div>
+    <div class="profile-item">
+      <svg class="profile-icon" viewBox="0 0 24 24" fill="none" stroke="#F5C800" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      <div>
+        <p class="profile-title">Times de BI</p>
+        <p class="profile-body">Que querem dados de campanha integrados diretamente aos seus sistemas via API.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECNOLOGIAS -->
+<section id="tecnologias">
+  <div class="reveal">
+    <div class="section-label">Tecnologias</div>
+    <h2 class="section-title">Suporte completo<br>a qualquer formato.</h2>
+  </div>
+  <div class="tech-grid reveal">
+    <div class="tech-card">
+      <p class="tech-name">Tag Standard</p>
+      <p class="tech-desc">HTML, imagem ou JS para renderizar criativos. Registra impressões, cliques e eventos em tempo real.</p>
+    </div>
+    <div class="tech-card">
+      <p class="tech-name">VPAID</p>
+      <p class="tech-desc">Entrega em players de vídeo com mensuração avançada: viewability e progresso por quartis.</p>
+    </div>
+    <div class="tech-card">
+      <p class="tech-name">VAST</p>
+      <p class="tech-desc">Formato padrão de mercado para vídeo. Compatível com qualquer player.</p>
+    </div>
+    <div class="tech-card">
+      <p class="tech-name">Pixel de Cliques</p>
+      <p class="tech-desc">URL de rastreamento para contabilizar cliques e medir resposta direta do público.</p>
+    </div>
+    <div class="tech-card">
+      <p class="tech-name">Pixel de Impressões</p>
+      <p class="tech-desc">URL para contabilizar volume de exibições e apoiar a comprovação de entrega.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TRANSPARÊNCIA -->
+<section id="transparencia">
+  <div class="transp-bg-text">ÉTICA</div>
+  <div class="transp-inner">
+    <div class="reveal">
+      <span class="transp-quote-mark">"</span>
+      <p class="transp-quote">Você precisa saber exatamente o que aconteceu com cada real investido em mídia.</p>
+      <p class="transp-sub">Isso não é só ética. É o que faz agências voltarem, anunciantes confiarem e veículos quererem trabalhar com a gente.</p>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <ul class="valores-list">
+        <li class="valor-item">
+          <p class="valor-title">Ética</p>
+          <p class="valor-desc">Em todas as relações.</p>
+        </li>
+        <li class="valor-item">
+          <p class="valor-title">Responsabilidade</p>
+          <p class="valor-desc">Em cada entrega.</p>
+        </li>
+        <li class="valor-item">
+          <p class="valor-title">Colaboração</p>
+          <p class="valor-desc">Como base do processo.</p>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- PRÓXIMOS PASSOS -->
+<section id="passos">
+  <div class="passos-left reveal">
+    <div class="section-label">Próximos passos</div>
+    <h2 class="section-title">Sem<br>formulário.<br>Sem demo<br>gravada.</h2>
+    <p style="margin-top:1.5rem; font-size:0.88rem; color:var(--muted); line-height:1.7; max-width:340px;">Tem uma conversa direta com quem construiu a plataforma. Em 30 minutos você vê sua campanha rodando ao vivo.</p>
+  </div>
+  <div class="passos-right reveal reveal-delay-2">
+    <div class="step-item">
+      <div class="step-num">1</div>
+      <p class="step-text">Mostramos o dashboard ao vivo.</p>
+    </div>
+    <div class="step-item">
+      <div class="step-num">2</div>
+      <p class="step-text">Você vê sua campanha, ou uma simulação, rodando em tempo real.</p>
+    </div>
+    <div class="step-item">
+      <div class="step-num">3</div>
+      <p class="step-text">A conversa sobre implementação começa.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTATO / FOOTER -->
+<footer id="contato">
+  <div class="contato-inner reveal">
+    <div class="contato-left">
+      <p class="brand">YELLOW SERVER</p>
+      <p class="tagline">Entrega, auditoria e inteligência contextual para mídia digital. Fundada em 2025.</p>
+    </div>
+    <div class="contato-right">
+      <a href="mailto:hello@yellowproducoes.com" class="email-link">hello@yellowproducoes.com</a>
+      <p class="footer-meta">© 2025 Yellow Server · Todos os direitos reservados</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top = my + 'px';
+  });
+
+  function animateRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  // Hover effect on interactive elements
+  document.querySelectorAll('a, button, .pilar, .tech-card, .metrica-row, .profile-item, .valor-item, .stat-item').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.width = '20px';
+      cursor.style.height = '20px';
+      ring.style.width = '52px';
+      ring.style.height = '52px';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.width = '12px';
+      cursor.style.height = '12px';
+      ring.style.width = '36px';
+      ring.style.height = '36px';
+    });
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Animated number counters in stats
+  function animateCounter(el, target, suffix = '') {
+    const duration = 1800;
+    const start = performance.now();
+    const isPercent = suffix === '%';
+    const update = now => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const val = Math.round(eased * target);
+      el.textContent = val + suffix;
+      if (progress < 1) requestAnimationFrame(update);
+    };
+    requestAnimationFrame(update);
+  }
+
+  const statsObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const nums = entry.target.querySelectorAll('.stat-num');
+        nums.forEach(num => {
+          const text = num.textContent.trim();
+          if (text === '100%') animateCounter(num, 100, '%');
+          else if (text === '3') animateCounter(num, 3);
+          else if (text === '0') { num.textContent = '0'; }
+        });
+        statsObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  statsObserver.observe(document.querySelector('.stats-bar'));
+
+  // Nav active state on scroll
+  const sections = document.querySelectorAll('section[id], footer[id]');
+  const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current ? 'var(--yellow)' : '';
+    });
+  }, { passive: true });
+</script>
+</body>
+</html>
