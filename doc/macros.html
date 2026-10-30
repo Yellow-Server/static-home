@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yellow Server | Implementação de Tags</title>
+<meta name="description" content="Guia para veículos e plataformas: como configurar as macros corretas nas tags da Yellow Server em cada ad server e DSP.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --y:#F5C80B; --bg:#0b0b0d; --bg2:#141417; --bg3:#1b1b1f; --line:#2a2a2f;
+  --tx:#f3f3f3; --mut:#9a9aa3; --dim:#6b6b73;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,sans-serif;line-height:1.6;font-size:16px}
+a{color:var(--y)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+h1,h2,h3{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;letter-spacing:.01em;line-height:1}
+.eyebrow{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--y);font-weight:700;margin-bottom:18px}
+.eyebrow:before{content:"";width:22px;height:1px;background:var(--y)}
+
+/* nav */
+nav{position:sticky;top:0;z-index:20;background:rgba(11,11,13,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+.logo{font-family:'Bebas Neue';font-size:24px;color:var(--y);text-decoration:none;letter-spacing:.02em}
+nav ul{display:flex;gap:22px;list-style:none}
+nav ul a{color:var(--mut);text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+nav ul a:hover{color:var(--tx)}
+.btn{display:inline-block;background:var(--y);color:#000;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:11px 18px;text-decoration:none;border:0;cursor:pointer;font-family:inherit}
+
+/* hero */
+.hero{position:relative;overflow:hidden;padding:96px 0 80px;border-bottom:1px solid var(--line)}
+.hero:after{content:"";position:absolute;right:-220px;top:-120px;width:640px;height:640px;border-radius:50%;border:56px solid var(--y);opacity:.9;pointer-events:none}
+.hero h1{font-size:clamp(52px,8vw,104px);max-width:720px}
+.hero h1 em{color:var(--y);font-style:normal}
+.hero p{max-width:520px;color:var(--mut);margin:26px 0 30px}
+.tag{display:inline-block;border:1px solid var(--line);background:var(--bg2);color:var(--y);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:6px 10px;margin-bottom:26px}
+
+section{padding:80px 0;border-bottom:1px solid var(--line)}
+h2{font-size:clamp(36px,5vw,56px);margin-bottom:22px;max-width:760px}
+.lead{color:var(--mut);max-width:640px;margin-bottom:36px}
+
+/* alert block */
+.yel{background:var(--y);color:#000}
+.yel .lead,.yel p{color:#2a2300}
+.problem{display:grid;grid-template-columns:1fr 1fr}
+.problem>div{padding:64px 48px}
+.problem h2{margin-bottom:14px}
+@media(max-width:800px){.problem{grid-template-columns:1fr}.problem>div{padding:44px 24px}nav ul{display:none}.hero:after{opacity:.25}}
+
+/* params table */
+table{width:100%;border-collapse:collapse;border:1px solid var(--line)}
+th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+th{background:var(--bg2);color:var(--y);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+td code,.inl{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--y);background:var(--bg3);padding:2px 6px}
+.scroll{overflow-x:auto}
+
+/* platform cards */
+.plat{border:1px solid var(--line);background:var(--bg2);margin-bottom:20px}
+.plat-h{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.plat-h h3{font-size:30px;color:var(--y)}
+.badge{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);border:1px solid var(--line);padding:4px 8px}
+.plat-b{padding:20px 22px}
+.code{position:relative;background:#09090b;border:1px solid var(--line);padding:16px 100px 16px 16px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#e9e9e9;word-break:break-all;line-height:1.7}
+.code .b{color:var(--dim)}
+.code .p{color:var(--y)}
+.code .m{color:#fff;background:rgba(245,200,11,.18);padding:0 3px}
+.copy{position:absolute;top:10px;right:10px;background:var(--y);color:#000;border:0;font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:7px 12px;cursor:pointer;font-family:inherit}
+.copy.ok{background:#fff}
+table.mt{margin-top:16px;background:var(--bg)}
+table.mt td{color:var(--mut)}
+table.mt td:nth-child(1){width:90px}
+table.mt td:nth-child(2){white-space:nowrap}
+.note{margin-top:14px;padding:12px 14px;border-left:3px solid var(--y);background:var(--bg3);font-size:14px;color:var(--mut)}
+.note.warn{border-color:#ff7a45}
+
+/* cards */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.grid3>div{background:var(--bg);padding:28px}
+.grid3 h3{font-size:26px;color:var(--y);margin-bottom:10px}
+.grid3 p{font-size:14px;color:var(--mut)}
+@media(max-width:800px){.grid3{grid-template-columns:1fr}}
+ol.steps{list-style:none;counter-reset:s;max-width:720px}
+ol.steps li{counter-increment:s;display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--line)}
+ol.steps li:before{content:counter(s);flex:none;width:30px;height:30px;border-radius:50%;background:var(--y);color:#000;font-weight:700;display:grid;place-items:center;font-size:14px}
+ul.check{list-style:none;max-width:720px}
+ul.check li{padding:12px 0 12px 30px;border-bottom:1px solid var(--line);position:relative;font-size:15px}
+ul.check li:before{content:"";position:absolute;left:0;top:19px;width:12px;height:12px;border-radius:50%;background:var(--y)}
+footer{padding:48px 0;color:var(--mut);font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:flex-end}
+footer a{font-family:'Bebas Neue';font-size:22px;text-decoration:none;letter-spacing:.04em}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="logo" href="#top">YELLOW SERVER</a>
+  <ul>
+    <li><a href="#porque">Por que importa</a></li>
+    <li><a href="#macros">Macros</a></li>
+    <li><a href="#plataformas">Plataformas</a></li>
+    <li><a href="#erros">Erros comuns</a></li>
+  </ul>
+  <a class="btn" href="mailto:hello@yellowproducoes.com">Fale com a gente</a>
+</div></nav>
+
+<header class="hero" id="top"><div class="wrap">
+  <div class="tag">&lt; Guia para veículos e plataformas</div>
+  <h1>Implemente a tag.<br>Preserve a <em>aferição.</em></h1>
+  <p>Cada ad server e DSP usa macros diferentes. Quando a macro está errada, a Yellow Server perde a URL da página e o contexto, e a medição do veículo sai prejudicada. Aqui estão as tags corretas para cada plataforma.</p>
+  <a class="btn" href="#plataformas">Ver as tags</a>
+</div></header>
+
+<div class="problem" id="porque">
+  <div>
+    <div class="eyebrow">O problema</div>
+    <h2>Macro errada, dado perdido.</h2>
+    <p class="lead" style="margin-bottom:0">Se o parâmetro chega vazio ou com o texto da macro sem substituir, não conseguimos identificar a página, classificar o ambiente nem atribuir cliques corretamente. O resultado aparece como baixa aferição no relatório do veículo.</p>
+  </div>
+  <div class="yel">
+    <div class="eyebrow" style="color:#000"><span style="display:none"></span>O que muda</div>
+    <h2>Um ajuste simples resolve.</h2>
+    <p>Basta usar o bloco da sua plataforma abaixo, sem alterar nomes de parâmetros nem trocar macros por valores fixos.</p>
+  </div>
+</div>
+
+<section id="macros"><div class="wrap">
+  <div class="eyebrow">Parâmetros</div>
+  <h2>O que cada parâmetro faz</h2>
+  <p class="lead">Todas as tags usam a mesma URL base. O que muda entre plataformas é só a macro que preenche cada parâmetro.</p>
+  <div class="scroll"><table>
+    <tr><th>Parâmetro</th><th>Conteúdo esperado</th><th>Observação</th></tr>
+    <tr><td><code>t</code></td><td>Cachebuster, valor aleatório por impressão</td><td>Evita cache de requisição. Se a plataforma não oferece macro, o servidor gera o valor.</td></tr>
+    <tr><td><code>h</code></td><td>URL completa da página onde o anúncio é exibido</td><td>Deve vir codificada (URL-encoded). É a base da classificação contextual.</td></tr>
+    <tr><td><code>c</code></td><td>Click URL da plataforma</td><td>Deve vir codificada. A Yellow acrescenta o destino ao final.</td></tr>
+  </table></div>
+</div></section>
+
+<section id="plataformas"><div class="wrap">
+  <div class="eyebrow">Plataformas</div>
+  <h2>Tags por plataforma</h2>
+  <p class="lead">Copie o bloco da plataforma que você usa. A URL base já está incluída. Nesta etapa trabalhamos apenas com os parâmetros <span class="inl">t</span>, <span class="inl">h</span> e <span class="inl">c</span>.</p>
+  <div id="plats"></div>
+</div></section>
+
+<section id="erros"><div class="wrap">
+  <div class="eyebrow">Erros comuns</div>
+  <h2>O que evitar</h2>
+  <ul class="check">
+    <li><b>Usar a macro de outra plataforma.</b> <span style="color:var(--mut)">Ex.: <span class="inl">%%PATTERN:url%%</span> do GAM dentro do DV360. A macro não é reconhecida e chega literal.</span></li>
+    <li><b>Substituir macros por valores fixos.</b> <span style="color:var(--mut)">O mesmo valor em todas as impressões invalida a contagem e o contexto.</span></li>
+    <li><b>Remover parâmetros.</b> <span style="color:var(--mut)">Sem <span class="inl">h</span> não há classificação da página.</span></li>
+    <li><b>Usar macro não codificada em <span class="inl">h</span> ou <span class="inl">c</span>.</b> <span style="color:var(--mut)">Prefira sempre a variante encoded/escaped da plataforma.</span></li>
+    <li><b>Alterar a URL base ou o ID do criativo.</b> <span style="color:var(--mut)">Cada tag é vinculada a um criativo específico.</span></li>
+    <li><b>Quebrar a URL em linhas ou espaços ao colar.</b> <span style="color:var(--mut)">Cole em uma linha única, sem espaços.</span></li>
+  </ul>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow">Validação</div>
+  <h2>Como conferir</h2>
+  <ol class="steps">
+    <li><span>Monte a tag na plataforma com o bloco acima e publique em um item de teste.</span></li>
+    <li><span>Abra a página e inspecione a requisição para <span class="inl">api.ylwsrv.com</span> nas ferramentas do navegador (aba Rede).</span></li>
+    <li><span>Confirme que <span class="inl">t</span>, <span class="inl">h</span> e <span class="inl">c</span> chegam com valores reais, sem nenhum texto de macro como <span class="inl">%%...%%</span> ou <span class="inl">${...}</span>.</span></li>
+    <li><span>Se algo estiver vazio ou literal, fale com a gente enviando a plataforma usada e um print da requisição.</span></li>
+  </ol>
+</div></section>
+
+<footer><div class="wrap">
+  <div>
+    <div class="logo">YELLOW SERVER</div>
+    <div>Entrega, auditoria e inteligência contextual para mídia digital.</div>
+  </div>
+  <a href="mailto:hello@yellowproducoes.com">HELLO@YELLOWPRODUCOES.COM</a>
+</div></footer>
+
+<script>
+var BASE = 'https://api.ylwsrv.com/creative/ac138eef-7d0a-4a37-8796-88e471849c71/tag?';
+var P = [
+ {n:'Google Ad Manager', b:'Ad server', q:'t=%%CACHEBUSTER%%&h=%%PATTERN:url%%&c=%%CLICK_URL_ESC%%',
+  m:[['t','%%CACHEBUSTER%%','Número aleatório gerado pelo GAM a cada impressão. Impede que o navegador reaproveite uma resposta em cache.'],
+     ['h','%%PATTERN:url%%','URL da página onde o anúncio é exibido. Retorna o valor da chave-valor <span class="inl">url</span> enviada pela página.'],
+     ['c','%%CLICK_URL_ESC%%','URL de clique do GAM, já com encoding. É por ela que o clique passa antes de chegar ao destino do anunciante.']],
+  note:'A macro <span class="inl">%%PATTERN:url%%</span> só retorna valor se a página do veículo enviar a chave-valor <span class="inl">url</span> na requisição de anúncio. Se a chave não estiver configurada, o parâmetro <span class="inl">h</span> chega vazio.'},
+ {n:'DV360', b:'DSP', q:'t=${CACHEBUSTER}&h=${SOURCE_URL_ENC}&c=${CLICK_URL_ENC}',
+  m:[['t','${CACHEBUSTER}','Número aleatório gerado pelo DV360 a cada impressão, para evitar cache da requisição.'],
+     ['h','${SOURCE_URL_ENC}','URL da página onde o anúncio é exibido, já codificada (URL-encoded).'],
+     ['c','${CLICK_URL_ENC}','URL de clique do DV360, codificada. O clique passa por ela antes de seguir para o destino.']]},
+ {n:'Xandr (Microsoft Invest)', b:'DSP', q:'t=${CACHEBUSTER}&h=${REFERER_URL_ENC}&c=${CLICK_URL_ENC}',
+  m:[['t','${CACHEBUSTER}','Número aleatório gerado pelo Xandr a cada impressão, para evitar cache da requisição.'],
+     ['h','${REFERER_URL_ENC}','URL da página de origem (referer) onde o anúncio é exibido, já codificada.'],
+     ['c','${CLICK_URL_ENC}','URL de clique do Xandr, codificada. O clique passa por ela antes de seguir para o destino.']]},
+ {n:'Equativ', b:'SSP / Ad server', q:'h={SITE_PAGE}&c={click_url}',
+  m:[['h','{SITE_PAGE}','URL da página onde o anúncio é exibido.'],
+     ['c','{click_url}','URL de clique da Equativ. O clique passa por ela antes de seguir para o destino.']],
+  note:'Não há macro de cachebuster na documentação da Equativ. Esta tag segue sem o parâmetro <span class="inl">t</span>, e o servidor da Yellow gera o próprio valor.'},
+ {n:'Nexx360', b:'SSP', q:'h=${REFERRER}&c=${CLICK_URL_ENC}',
+  m:[['h','${REFERRER}','URL da página de origem (referrer) onde o anúncio é exibido.'],
+     ['c','${CLICK_URL_ENC}','URL de clique da Nexx360, codificada. O clique passa por ela antes de seguir para o destino.']]},
+ {n:'Revive Adserver', b:'Ad server', q:'h={pageurl}&c={clickurl_enc}',
+  m:[['h','{pageurl}','URL da página onde o anúncio é exibido.'],
+     ['c','{clickurl_enc}','URL de clique do Revive, codificada. O clique passa por ela antes de seguir para o destino.']]}
+];
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+var out='';
+P.forEach(function(p,i){
+  var parts=p.q.split('&').map(function(kv){
+    var a=kv.split('=');
+    return '<span class="p">'+a[0]+'</span>=<span class="m">'+esc(a.slice(1).join('='))+'</span>';
+  }).join('<span class="b">&amp;</span>');
+  out+='<article class="plat"><div class="plat-h"><h3>'+p.n+'</h3><span class="badge">'+p.b+'</span></div><div class="plat-b">'
+   +'<div class="code" id="c'+i+'"><span class="b">'+esc(BASE)+'</span>'+parts
+   +'<button class="copy" data-i="'+i+'">Copiar</button></div>'
+   +'<div class="scroll"><table class="mt"><tr><th>Parâmetro</th><th>Macro</th><th>O que faz</th></tr>'
+   +p.m.map(function(x){return '<tr><td><code>'+x[0]+'</code></td><td><code>'+esc(x[1])+'</code></td><td>'+x[2]+'</td></tr>'}).join('')
+   +'</table></div>'
+   +(p.note?'<div class="note">'+p.note+'</div>':'')
+   +'</div></article>';
+});
+document.getElementById('plats').innerHTML=out;
+document.getElementById('plats').addEventListener('click',function(e){
+  var b=e.target.closest('.copy'); if(!b) return;
+  var txt=BASE+P[b.dataset.i].q;
+  var done=function(){b.textContent='Copiado';b.classList.add('ok');setTimeout(function(){b.textContent='Copiar';b.classList.remove('ok')},1500)};
+  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(done)}
+  else{var t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();done()}
+});
+</script>
+</body>
+</html>
